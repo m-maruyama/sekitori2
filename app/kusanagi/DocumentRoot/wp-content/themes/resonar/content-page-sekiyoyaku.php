@@ -89,15 +89,15 @@
 	                foreach ($users as $one_user){
 		                $group_user_id = $one_user->ID;
 		                $group_user_name = $one_user->display_name;
-                    }
-                        $sel_start = '<select name="select" onChange="location.href=value;">'; // option の value 値を URL とする
-                        $opt =  '<option>ページを選択してください</option>'; // 必要がなければこの行は削除
-                        foreach ( $terms as $value ) { 
-      echo '<option value="'.get_term_link($value->slug,$taxonomy_slug).'">'.esc_html($value->name).'</option>'; // タームのURLとタイトルを表示
-    }
-    echo '</select>';
+
+//                        $sel_start = '<select name="select" onChange="location.href=value;">'; // option の value 値を URL とする
+//                        $opt =  '<option>ページを選択してください</option>'; // 必要がなければこの行は削除
+//                        foreach ( $terms as $value ) {
+//      echo '<option value="'.get_term_link($value->slug,$taxonomy_slug).'">'.esc_html($value->name).'</option>'; // タームのURLとタイトルを表示
+//    }
+//    echo '</select>';
   }
-	                var_dump($users[0]->ID);
+//	                var_dump($users[0]->ID);
                     foreach($seats as $seat) {
                         $color_red = '';
 	                    $user_nicename = '';
