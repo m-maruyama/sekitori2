@@ -1,0 +1,62 @@
+## For daniel.pm1932.jp
+version: '2'
+
+services:
+  daniel-data:
+    container_name: daniel-data
+    image: busybox
+    restart: always
+    stdin_open: true
+    tty: true
+    environment:
+      TZ: "Asia/Tokyo"
+    volumes:
+      - ../app:/home/kusanagi
+      - ../etc/nginx/conf.d/local:/etc/nginx/conf.d
+      - ../etc/php/php.ini:/usr/local/etc/php/php.ini
+      - ../etc/php/php-fpm.d:/usr/local/etc/php-fpm.d
+      - ../etc/logrotate.d/nginx:/etc/logrotate.d/nginx
+      - ../var/nginx/log:/var/log/nginx
+      - ../var/php/log:/var/log/php
+    command: /bin/sh
+
+  daniel-nginx:
+    container_name: daniel-nginx
+    restart: always
+    image: pressmaninc/pm-kusanagi-nginx:1.15.3
+    volumes_from:
+      - daniel-data
+    links:
+      - daniel-php7:php
+    ports:
+      - "8286:80"
+
+  daniel-php7:
+    container_name: daniel-php7
+    restart: always
+    build:
+      context: ./php
+    image: daniel-php7-fpm
+    links:
+     - daniel-mysql:mysql
+    volumes_from:
+      - daniel-data
+    environment:
+      TZ: "Asia/Tokyo"
+
+  daniel-mysql:
+    container_name: daniel-mysql
+    image: mysql:5.7.20
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: pman7170
+      MYSQL_USER:     daniel-user
+      MYSQL_PASSWORD: pman7170
+      MYSQL_DATABASE: wp_db
+      TZ: "Asia/Tokyo"
+    volumes:
+      - ../etc/mysql/my.cnf:/etc/mysql/my.cnf
+    volumes_from:
+      - daniel-data
+    ports:
+      - "8386:3306"

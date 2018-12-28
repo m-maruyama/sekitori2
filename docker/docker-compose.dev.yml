@@ -1,0 +1,46 @@
+## For daniel.dev-d-emma.jp
+version: '2'
+
+services:
+  daniel-data:
+    container_name: daniel-data
+    image: busybox
+    restart: always
+    stdin_open: true
+    tty: true
+    environment:
+      TZ: "Asia/Tokyo"
+    volumes:
+      - ../app:/home/kusanagi
+      - ../etc/nginx/conf.d/dev:/etc/nginx/conf.d
+      - ../etc/php/php.ini:/usr/local/etc/php/php.ini
+      - ../etc/php/php-fpm.d:/usr/local/etc/php-fpm.d
+      - ../etc/logrotate.d/nginx:/etc/logrotate.d/nginx
+      - ../var/nginx/log:/var/log/nginx
+      - ../var/php/log:/var/log/php
+      - /etc/pki/ssl/daniel.dev-d-emma.jp_2018.crt:/etc/nginx/daniel.dev-d-emma.jp_2018.crt
+      - /etc/pki/ssl/daniel.dev-d-emma.jp_2018.key:/etc/nginx/daniel.dev-d-emma.jp_2018.key
+    command: /bin/sh
+
+  daniel-nginx:
+    container_name: daniel-nginx
+    restart: always
+    image: pressmaninc/pm-kusanagi-nginx:1.15.3
+    volumes_from:
+      - daniel-data
+    links:
+      - daniel-php7:php
+    ports:
+      - "80:80"
+      - "443:443"
+
+  daniel-php7:
+    container_name: daniel-php7
+    restart: always
+    build:
+      context: ./php
+    image: daniel-php7-fpm
+    volumes_from:
+      - daniel-data
+    environment:
+      TZ: "Asia/Tokyo"

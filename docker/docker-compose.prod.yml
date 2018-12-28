@@ -1,0 +1,46 @@
+## For sekitori.d-emma.jp
+version: '2'
+
+services:
+  sekitori-data:
+    container_name: sekitori-data
+    image: busybox
+    restart: always
+    stdin_open: true
+    tty: true
+    environment:
+      TZ: "Asia/Tokyo"
+    volumes:
+      - ../app:/home/kusanagi
+      - ../etc/nginx/conf.d/dev:/etc/nginx/conf.d
+      - ../etc/php/php.ini:/usr/local/etc/php/php.ini
+      - ../etc/php/php-fpm.d:/usr/local/etc/php-fpm.d
+      - ../etc/logrotate.d/nginx:/etc/logrotate.d/nginx
+      - ../var/nginx/log:/var/log/nginx
+      - ../var/php/log:/var/log/php
+      #- /etc/pki/ssl/daniel.d-emma.jp_2018.crt:/etc/nginx/daniel.d-emma.jp_2018.crt
+      #- /etc/pki/ssl/daniel.d-emma.jp_2018.key:/etc/nginx/daniel.d-emma.jp_2018.key
+    command: /bin/sh
+
+  sekitori-nginx:
+    container_name: sekitori-nginx
+    restart: always
+    image: pressmaninc/pm-kusanagi-nginx:1.15.3
+    volumes_from:
+      - sekitori-data
+    links:
+      - sekitori-php7:php
+    ports:
+      - "80:80"
+      - "443:443"
+
+  sekitori-php7:
+    container_name: sekitori-php7
+    restart: always
+    build:
+      context: ./php
+    image: sekitori-php7-fpm
+    volumes_from:
+      - sekitori-data
+    environment:
+      TZ: "Asia/Tokyo"
