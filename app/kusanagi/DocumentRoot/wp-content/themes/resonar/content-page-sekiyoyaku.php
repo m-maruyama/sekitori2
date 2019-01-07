@@ -8,9 +8,44 @@
 ?>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
 <script type="text/javascript">
-    // $(document).ready( function(){
-    //     $('#names').focus();
-    // });
+
+    $(document).on('click', "#cancel", function() {
+        var seat_post_id = $(this).attr("value");
+        $.ajax({
+            type: 'POST',
+            url: ajaxurl,
+            data: {
+                'action' : 'cancel',
+                'seat_post_id' : seat_post_id
+            },
+            success: function( response ){
+                location.href =response;
+            }
+        });
+        return false;
+    });
+
+    var ajaxurl = '<?php echo admin_url( 'admin-ajax.php'); ?>';
+    function seki_yoyaku(element){
+        var idx = element.selectedIndex;       //インデックス番号を取得
+        var val = element.options[idx].value;  //value値を取得
+        var member_val = val.split(',');
+        $.ajax({
+            type: 'POST',
+            url: ajaxurl,
+            data: {
+                'action' : 'seki_yoyaku',
+                'user_id' : member_val[0],
+                'seat_post_id' : member_val[1],
+            },
+            success: function( response ){
+                location.href =response;
+            }
+        });
+        return false;
+
+
+    }
 </script>
 <link rel='stylesheet' id='my-css'  href='<?php home_url();?>/wp-content/themes/resonar/sekitori.css' type='text/css' media='all' />
 <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
@@ -37,7 +72,6 @@
 			</div>
 		</header>
 	<?php endif; ?>
-
 	<div class="entry-content-footer">
 		<div class="entry-content">
             <table id="tablepress-1" class="tablepress tablepress-id-1">
@@ -85,38 +119,30 @@
 </tr>';
 
 	                $users = get_users();
-	                $user_arry = [];
-	                foreach ($users as $one_user){
-		                $group_user_id = $one_user->ID;
-		                $group_user_name = $one_user->display_name;
 
-//                        $sel_start = '<select name="select" onChange="location.href=value;">'; // option の value 値を URL とする
-//                        $opt =  '<option>ページを選択してください</option>'; // 必要がなければこの行は削除
-//                        foreach ( $terms as $value ) {
-//      echo '<option value="'.get_term_link($value->slug,$taxonomy_slug).'">'.esc_html($value->name).'</option>'; // タームのURLとタイトルを表示
-//    }
-//    echo '</select>';
-  }
+
 //	                var_dump($users[0]->ID);
                     foreach($seats as $seat) {
                         $color_red = '';
 	                    $user_nicename = '';
 	                    $avator = '';
+	                    $disabled = '';
+	                    $cancel_button = false;
+	                    $seat_post_id = $seat->ID;
                         //席が確保されているか
-                        $user_id = get_post_meta($seat->ID,'user_id',true);
+                        $user_id = get_post_meta($seat->ID,'reserved_user_id',true);
                         if($user_id){
                             $user_data = get_userdata($user_id);
 	                        $user_nicename = $user_data->display_name;
 	                        $user_nicename = ' - '.$user_nicename;
 
-	                        //qrコードをかざしたユーザーの座席を赤くする
-	                        if($seat->post_title==$para_seat_id){
-		                        $color_red = ' style="background-color:red;"';
-	                        }
 	                        $avator = get_avatar($user_id, 40);
 	                        if($avator){
 		                        $avator = '<br>'.$avator;
                             }
+                            $disabled = 'disabled';
+	                        $cancel_button = true;
+
                         }
                         if($row_cnt==2){
                             echo '<th class="" colspan=6></th>';
@@ -128,11 +154,11 @@
                         }
                         if($cnt<$max){
 //	                        echo '<td class="column-'.$cnt.'"'.$color_red.'>'.$seat->post_title.$user_nicename.$avator.'</td>';
-	                        echo '<td class="column-'.$cnt.'">'.$seat->post_title.'</td>';
+	                        echo '<td class="column-'.$cnt.'">'.$seat->post_title.make_pull_down($users,$seat_post_id,$disabled,$user_id).$avator.make_cancel_down($cancel_button,$seat_post_id).'</td>';
                         }
                         if($cnt===$max||$cnt==$user_cnt){
 //	                        echo '<td class="column-'.$cnt.'"'.$color_red.'>'.$seat->post_title.$user_nicename.$avator.'</td>';
-	                        echo '<td class="column-'.$cnt.'">'.$seat->post_title.'</td>';
+	                        echo '<td class="column-'.$cnt.'">'.$seat->post_title.make_pull_down($users,$seat_post_id,$disabled,$user_id).$avator.make_cancel_down($cancel_button,$seat_post_id).'</td>';
                             echo '</tr>';
 	                        $cnt = 1;
 	                        $row_cnt++;

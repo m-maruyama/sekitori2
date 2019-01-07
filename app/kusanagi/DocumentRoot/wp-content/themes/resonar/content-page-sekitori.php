@@ -113,10 +113,10 @@
                             echo '<tr class="row-'.$cnt.' odd">';
                         }
                         if($cnt<$max){
-	                        echo '<td class="column-'.$cnt.'"'.$color_red.'>'.$seat->post_title.$user_nicename.$avator.'</td>';
+	                        echo '<td class="column-'.$cnt.'"'.$color_red.'>'.$seat->post_title.$avator.'</td>';
                         }
                         if($cnt===$max||$cnt==$user_cnt){
-	                        echo '<td class="column-'.$cnt.'"'.$color_red.'>'.$seat->post_title.$user_nicename.$avator.'</td>';
+	                        echo '<td class="column-'.$cnt.'"'.$color_red.'>'.$seat->post_title.$avator.'</td>';
                             echo '</tr>';
 	                        $cnt = 1;
 	                        $row_cnt++;

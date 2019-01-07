@@ -112,7 +112,7 @@ ORDER BY posts.ID ASC";
 	$my_seat_id = $wpdb->get_results( $my_seat_id_query, ARRAY_A );
 	if($my_seat_id){
 		//自分の座席を確保した状態の席とり表のURLを返す
-		return urlencode(home_url().'/sekitori/?seat_id='.$my_seat_id[0]['ID']);
+		return urlencode(home_url().'/sekitori/?seat_id='.$my_seat_id[0]['post_title']);
 	}
 
 	//まだユーザーが割り当てられていない座席を取得
@@ -130,7 +130,7 @@ ORDER BY posts.ID ASC";
 	//座席を割り当て
 	update_post_meta($empty_seats[0]['ID'],'user_id',$user_id);
 
-	return urlencode(home_url().'/sekitori/?seat_id='.$empty_seats[0]['ID']);
+	return urlencode(home_url().'/sekitori/?seat_id='.$empty_seats[0]['post_title']);
 
 }
 function set_org_query_vars( $query_vars ) {
@@ -138,3 +138,71 @@ function set_org_query_vars( $query_vars ) {
 	return $query_vars;
 }
 add_filter('query_vars', 'set_org_query_vars');
+
+function seki_yoyaku(){
+	global $wpdb;
+	$user_id = $_POST['user_id'];
+	$seat_post_id = $_POST['seat_post_id'];
+	$seat = get_post($seat_post_id);
+	$seat_id = $seat->post_title;
+
+	//すでに座席が確保されているユーザーは確保している座席番号を返して終了
+	$my_seat_id_query = "SELECT ID FROM $wpdb->posts posts, $wpdb->postmeta postmeta 
+WHERE posts.ID = postmeta.post_id 
+AND posts.post_type = 'seat' 
+AND posts.post_status = 'publish'
+AND postmeta.meta_key = 'reserved_user_id'
+AND postmeta.meta_value = '".$user_id."'
+ORDER BY posts.ID ASC";
+	$my_seat_id = $wpdb->get_results( $my_seat_id_query, ARRAY_A );
+	if($my_seat_id){
+//		return urlencode(home_url().'/sekiyoyaku/?seat_id='.$seat_id);
+		// PHPの配列をJSONに変換して出力
+		header('Content-Type: application/json; charset=utf-8');
+		echo json_encode( home_url().'/sekiyoyaku/' );
+		die();
+	}
+	//座席を割り当て
+	update_post_meta($seat_post_id,'reserved_user_id',$user_id);
+
+//	return urlencode(home_url().'/sekiyoyaku/?seat_id='.$seat_id);
+	// PHPの配列をJSONに変換して出力
+	header('Content-Type: application/json; charset=utf-8');
+	echo json_encode( home_url().'/sekiyoyaku/?seat_id='.$seat_id );
+	die();
+}
+add_action( 'wp_ajax_seki_yoyaku', 'seki_yoyaku' );
+add_action( 'wp_ajax_nopriv_seki_yoyaku', 'seki_yoyaku' );
+
+function make_pull_down($users,$seat_post_id,$disabled,$user_id){
+	$opt = '<option>選択してください</option>';
+	$sel = '<select id="member" name="member" onChange="seki_yoyaku(this);" '.$disabled.'>'; // option の value 値を URL とする
+	foreach ($users as $one_user){
+		$selected = '';
+		if($user_id==$one_user->ID){
+			$selected = 'selected';
+		}
+		$opt = $opt.'<option value="'.$one_user->ID.','.$seat_post_id.'" '.$selected.'>'.esc_html($one_user->display_name).'</option>';
+	}
+	$sel_end = '</select>';
+	return $sel.$opt.$sel_end;
+}
+function make_cancel_down($cancel_button,$seat_post_id){
+	if($cancel_button){
+		$cancel_button = '&nbsp;&nbsp;<button id="cancel" value="'.$seat_post_id.'">解除</button>';
+		return $cancel_button;
+	}else{
+		return '';
+	}
+}
+
+function cancel(){
+	$user_id = $_POST['user_id'];
+	$seat_post_id = $_POST['seat_post_id'];
+	delete_post_meta($seat_post_id,'reserved_user_id');
+	header('Content-Type: application/json; charset=utf-8');
+	echo json_encode( home_url().'/sekiyoyaku/' );
+	die();
+}
+add_action( 'wp_ajax_cancel', 'cancel' );
+add_action( 'wp_ajax_nopriv_scancel', 'cancel' );

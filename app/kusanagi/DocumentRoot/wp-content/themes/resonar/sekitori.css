@@ -3898,7 +3898,14 @@ iframe[id*="twitter-widget-"] {
 	input[type="submit"] {
 		font-size: 15px;
 		font-size: 0.9375rem;
-		padding: 17px 32px 16px;
+		/*padding: 17px 32px 16px;*/
+
+		padding:5px;
+
+		background-color: navy;
+		/*height:10px;*/
+
+
 	}
 
 	input[type="text"],
@@ -4981,8 +4988,12 @@ iframe[id*="twitter-widget-"] {
 	border-left: 1px solid #dddddd;
 }
 .tablepress td{
-	height: 110px;
+	height: 70px;
 }
 .site-title a {
 	color: #FFFFFF;
+}
+select:disabled {
+	border: 1px solid black;
+	background-color: grey;
 }
